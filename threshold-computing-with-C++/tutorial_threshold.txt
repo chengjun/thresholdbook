@@ -1,0 +1,207 @@
+Basically, followed is a detailed step-by-step tutorial showing you how to process data and compute the thresholds. You can easily follow and extend this procedure for similar and more complicated tasks.
+
+Please note that I completed all the following tasks on Linux, which provided powerful utilities for handling data.
+
+NOTE:
+	i. I use ``$ xxx'' to mean that you invoke a command xxx in the Linux terminal 
+
+	ii. I use many commands/utilities shipped with Linux when cleaning and formatting data. Certainly, you can manage to do the same job on Windows, but I am sure that would be much more complicated and even slower. So my advice is that, learn some Linux.
+
+
+1. Relabel the users with integer starting form 1. This has two benefits: First, it is much more compact and saves space; Second, you do not need to care for the mapping from a long ID to the corresponding integer in your program.
+
+	(1) To see how many lines the social graph file contains, I invoke
+
+		$ wc -l SocialGraphAll.csv
+
+		Then I find 906,335,940 lines in total, so damn large!
+
+	(2) When dealing with so large a file, it is always wise to pick out a small portion as 
+		a sample for testing a command before you apply that on the big file.
+
+		$ head -n 10000 SocialGraphAll.csv > SocialGraphAll.csv.sample
+
+		gets the first 10,000 lines and save as a sample.
+
+	(3) To label the user, I need to list all the users involved in the SocialGraph file. 
+
+		After experimenting with the sample file, I then invoke
+
+		$ awk -F"," '{print $1"\n"$2}' SocialGraphAll.csv > users.id.all
+
+		to print the first and second column to the file users.id.all. This command uses ``awk'' utility to deal with column-separated text files. The option -F"," specifies the delimiters to be comma. Awk is actually a programming language where the program is provided by '{...}'. Awk works by reading one line a time from the input file, and then execute the program once w.r.t. that line, until reaching the end of the file. 
+
+		In this case, '{print $1"\n"$2}' means printing the first column, followed by a return, followed by the second column (column x is denoted by $x). The output is redirected to a file by using the ``>'' operator (if not, the result will be printed to screen).
+
+	(4) Then we sort all the ids recorded in users.id.all and remove duplicate ids. ``sort'' is a life-saving 
+utility to do this with maximum speed and optimized RAM use. 
+		The command
+
+		$ sort -nu users.id.all > users.id.uniq 
+
+		will do the job. ``-nu'' is the abbreviated option for ``-n'' (sort numerically) and ``-u'' (remain unique values only).
+
+		$ wc -l users.id.uniq
+
+		reports that there are 65,766,984 users in the graph. Now we label every user with the corresponding line number in users.id.uniq.
+
+	(5) Relabeling social graph
+
+		Again, we resort to ``awk''. 
+
+		$ awk -F"," '{NR==FNR{s[$1]=NR;next}{print s[$1], s[$2]}}' users.id.uniq SocialGraphAll.csv > SocialGraphAll.new
+
+		This awk command has two input files. It first reads users.id.uniq and records the mapping id --> line_number in variable s; then replacing id with s when reading SocialGraphAll.csv. ``NR==FNR'' is a trick that makes the following {...} is executed for the first input file only. The resulting SocialGraphAll.new is of 15.6 GB.
+
+	(6) Cleaning and relabeling list of retweets
+		
+		You seem to have maintained too many fields in the diffsersAllFinal.csv to do you any practical good in computation. Therefore, I rewrite the file to reformatted_retweet.txt leaving only 4 fields:
+
+	rts.mid, user.id, created.time, mid
+
+		Specifically, I reformatted all the date time with ISO style, i.e. "YYYY-MM-DD HH:MM:SS". I recommend you use this format when possible to ensure both human-readability and dictionary-sortability. As this involves dirty jobs with date-time, I have to use R.
+
+		Then, call ``awk'' again to relabel all the user.id with integers. It would be the same as the last step. I believe you can easily figure out the command line.
+
+	(7) Sorting reformatted_retweet.txt by rts.mid
+
+		I sort the list of retweets by the message id of retweeted original message, and secondarily 
+by created.time.
+
+		$ sed "1d" reformatted_retweet.txt | sort -t$'\t' -k1,1 -k3,3 > reformatted_retweet.txt.out
+
+		``sed "1d"'' simply removed the header line before piping the file to sort. 
+
+		The option -t$'\t' is a tricky way to tell sort the file is delimited by tab. Then, the options ``-k1,1 -k3,3'' means primarily sorting by the fist column (rts.mid), and secondarily by the third column (created.time). Date-time can be handled properly with the default dictionary-sorting as it is coded in ISO format.
+
+		``|'' is the useful ``piping'' operator in Linux. ``cmd1 | cmd2'' tells the system to use the output from cmd1 as the input for cmd2.
+
+		NOTE: I noticed that there are some messages with strange rts.mid=0. Please check your data.
+
+		$ sed "1d" reformatted_retweet.txt | awk '{print $1}' | uniq  >rts.mid.uniq 
+		$ wc -l rts.mid.uniq
+
+		There are 2,522 unique retweeted messages.
+
+	(8) Now I have done the terribly tiring part of data cleaning. A snapshot of new data files prepared.
+
+	==> reformatted_retweet.txt <==
+	rts.mid user.id created.time    mid
+	3342632575149640        24271172        2011-08-04 11:42:00     3342633198208783
+	3342632575149640        10607151        2011-08-04 11:42:09     3342633233676597
+	3342632575149640        21551275        2011-08-04 11:42:32     3342633327609990
+	3342632575149640        23411861        2011-08-04 11:42:54     3342633423009160
+	3342632575149640        8927852 2011-08-04 11:42:54     3342633423314842
+	3342632575149640        13396137        2011-08-04 11:43:32     3342633582148618
+	3342632575149640        17659472        2011-08-04 11:44:26     3342633808314488
+	3342632575149640        28133463        2011-08-04 11:44:28     3342633817599380
+	3342632575149640        3321977 2011-08-04 11:44:38     3342633858647755
+
+	==> SocialGraphAll.new <==
+	32775802 3732135
+	32775802 8148159
+	32775802 11344720
+	32775802 10105695
+	32775802 13085357
+	32775802 18911523
+	32775802 19659006
+	32775802 13638618
+	32775802 11617931
+	32775802 9740774
+
+	==> users.id.uniq <==
+	0
+	1
+	7
+	17
+	18
+	1000
+	1005
+	1012
+	1025
+	1030
+
+	NOTE: The relabeled id for users: 1 ~ 65,766,984
+
+2. Computing the threshold
+
+	Pre-processing and pre-sorting the data can greatly facilitates the later computation, as in this case. Now reformatted_retweet.txt is sorted by rts.mid and time, which enables us to compute threshold ``line-by-line'' and reduce overhead to the minimal.
+
+	The algorithm:
+
+	int rts.mid.now <- 0
+	Set rt.user.set <- {}
+
+	for line in reformatted_retweet.txt
+		if (firstline)
+			continue
+		end if
+
+		read and parse the line into (rts.mid, rt.user, mid)
+
+		if (rts.mid != rts.mid.now)
+			rt.user.set <- {}
+			rts.mid.now <- rts.mid
+		end if
+
+		ADD rt.user to rt.user.set
+		f.all <- 0
+		f.retweeted <- 0
+		for u in Followee[rt.user]
+			f.all <- f.all + 1
+			if u in rt.user.set
+				f.retweeted <- f.retweeted + 1
+			end if
+		end for
+
+		if (f.all==0)
+			threshold <- NA
+		else
+			threshold <- f.retweeted / f.all
+		end if
+
+		print (rts.mid, rt.user, mid, f.retweeted, f.all, threshold)
+
+	end for
+
+	NOTE: network is loaded into the Followee arrays.
+
+	Considering the HUGE size of the network, I write a C++ program thresholdCompute.cpp.
+
+	When you use it, you need to modify the specifications at the head of the program.
+
+	The specifications are written with the following Macros:
+
+	#define SOCIAL_GRAPH_FILE_NAME "../SocialGraphAll.new"
+	#define RETWEET_LIST_FILE_NAME "../reformatted_retweet.txt"
+	#define THRESHOLD_OUT_FILE_NAME "../threshold.txt"
+
+	#define MAX_NODE 65767000
+	#define MAX_EDGE 906336000
+
+	The first three lines configure the file paths: SocialGraph, Retweets and Output File. ".." refer to the parent directory. Then you specify MAX_NODE and MAX_EDGE, which should be just a little larger than the number of nodes and edges in SocialGraph.
+	
+	NOTE: Data MUST be prepared in the same way as Step 1 before using the program. 
+
+	Now, compile and run. 
+	
+	$ g++ -Wall -O2 thresholdCompute.cpp -o thresholdCompute
+	$ ./thresholdCompute
+
+	The result file is formatted as:
+
+	rts.mid	rt.user	mid	followee.all	followee.retweeted	threshold
+	3342632575149640	24271172	3342633198208783	0	0	NA
+	3342632575149640	10607151	3342633233676597	1	1	1.000000
+	3342632575149640	21551275	3342633327609990	2	1	0.500000
+
+	If a user has no followee, then threshold is set to NA.
+
+
+3. Enjoy it!
+
+
+by
+Richard Kwo (Fangjian Guo)
+Feb 18, 2013		
+
