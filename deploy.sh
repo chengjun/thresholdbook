@@ -3,7 +3,7 @@
 # git pull first
 # git add .
 # git commit -m 'this is a message'
-# git push origin main
+# git push origin master
 # ssh-add ~/.ssh/id_rsa
 # vim save and quit :wq
 # git remote set-url origin git@github.com:chengjun/thresholdbook.git
