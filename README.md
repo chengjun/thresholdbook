@@ -1,7 +1,6 @@
 ## 《跨越网络的门槛：社交媒体上的信息扩散》
 
-![image](https://user-images.githubusercontent.com/543384/173530879-9b97032f-eb41-40dc-b8c8-d2161ac91d20.png)
-
+![image](https://user-images.githubusercontent.com/543384/173531307-265b16ce-db90-4b24-9897-ddda10e1c3af.png)
 
 - Gitee代码仓库 https://gitee.com/chengjunwang/thresholdbook  
 - Github代码仓库 https://github.com/chengjun/thresholdbook/
