@@ -18,4 +18,6 @@
 ### Slides
 下载链接: https://pan.baidu.com/s/1FmQK3w2hzT9yhfVJ14RjeQ 提取码: 2nks
 
-![](arts.gif)
+![](https://user-images.githubusercontent.com/543384/178952701-6e595809-3059-41d4-9d88-356a9b339445.png)
+
+
