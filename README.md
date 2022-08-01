@@ -17,7 +17,7 @@
 ![](二维码.png)
 
 ### Slides
-- [2022版本](https://github.com/chengjun/thresholdbook/blob/master/%E3%80%8A%E8%B7%A8%E8%B6%8A%E7%BD%91%E7%BB%9C%E7%9A%84%E9%97%A8%E6%A7%9B%E3%80%8B.pdf.zip)
+- [2022版本](https://github.com/chengjun/thresholdbook/blob/master/%E3%80%8A%E8%B7%A8%E8%B6%8A%E7%BD%91%E7%BB%9C%E7%9A%84%E9%97%A8%E6%A7%9B%E3%80%8B.pdf.zip) 下载后需要解压缩
 - [2021版本](https://pan.baidu.com/s/1FmQK3w2hzT9yhfVJ14RjeQ) 提取码: 2nks
 
 ![](https://user-images.githubusercontent.com/543384/178952701-6e595809-3059-41d4-9d88-356a9b339445.png)
